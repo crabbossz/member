@@ -1,24 +1,10 @@
 <?php
-/**
- * Api基础控制器
- */
-
 namespace app\api\controller;
 
-use think\exception\HttpResponseException;
 use think\Request;
-use app\api\traits\ApiAuth;
 
 class ApiBaseController
 {
-    use ApiAuth;
-
-    //无需验证登录的方法，禁止在此处修改,请在具体业务Controller中修改
-    protected $authExcept = [];
-
-    //当前访问的用户
-    protected $uid = 0;
-
     //当前页码
     protected $page;
 
@@ -40,10 +26,6 @@ class ApiBaseController
     public function __construct(Request $request)
     {
         $this->request = $request;
-
-        // jwt验证
-        $this->jwtInit();
-        $this->checkToken();
 
         // 初始化基本数据
         $this->param = $request->param();

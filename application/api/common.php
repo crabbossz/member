@@ -2,7 +2,7 @@
 
 use think\response\Json;
 
-if(!function_exists('api_success')){
+if (!function_exists('api_success')) {
     /**
      * 操作成功
      * @param string $msg
@@ -16,7 +16,7 @@ if(!function_exists('api_success')){
     }
 }
 
-if(!function_exists('api_error')){
+if (!function_exists('api_error')) {
     /**
      * 操作失败
      * @param string $msg
@@ -30,7 +30,7 @@ if(!function_exists('api_error')){
     }
 }
 
-if(!function_exists('api_result')){
+if (!function_exists('api_result')) {
     /**
      * 返回json结果
      * @param string $msg
@@ -38,7 +38,7 @@ if(!function_exists('api_result')){
      * @param int $code
      * @return Json
      */
-    function api_result($msg = 'fail', $data =[], $code = 500)
+    function api_result($msg = 'fail', $data = [], $code = 500)
     {
         $header = [];
         //处理跨域请求问题
@@ -46,19 +46,19 @@ if(!function_exists('api_result')){
             $header = ['Access-Control-Allow-Origin' => '*'];
             if (request()->isOptions()) {
                 $header = config('api.cross_domain.header');
-                return json('',200,$header);
+                return json('', 200, $header);
             }
         }
 
         return json([
             'code' => $code,
-            'msg'  => $msg,
+            'msg' => $msg,
             'data' => $data,
         ], $code, $header);
     }
 }
 
-if(!function_exists('api_unauthorized')){
+if (!function_exists('api_unauthorized')) {
     /**
      * 未授权
      * @param string $msg
@@ -72,7 +72,7 @@ if(!function_exists('api_unauthorized')){
     }
 }
 
-if(!function_exists('api_client_error')){
+if (!function_exists('api_client_error')) {
     /**
      * 客户端错误
      * @param string $msg
@@ -86,7 +86,7 @@ if(!function_exists('api_client_error')){
     }
 }
 
-if(!function_exists('api_server_error')){
+if (!function_exists('api_server_error')) {
     /**
      * 服务端错误
      * @param string $msg
@@ -100,7 +100,7 @@ if(!function_exists('api_server_error')){
     }
 }
 
-if(!function_exists('api_error_404')){
+if (!function_exists('api_error_404')) {
     /**
      * 资源或接口不存在
      * @param string $msg
@@ -111,5 +111,30 @@ if(!function_exists('api_error_404')){
     function api_error_404($msg = '404 not found', $data = '', $code = 404)
     {
         return api_result($msg, $data, $code);
+    }
+}
+
+
+if (!function_exists('cors_html')) {
+    /**
+     * 跨域
+     */
+    function cors_html()
+    {
+
+        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+            header("Access-Control-Allow-Origin: *");
+            header("Access-Control-Allow-Headers: X-Token,Origin, X-Requested-With, Content-Type, Accept, Authorization");
+            header('Access-Control-Expose-Headers: *');
+            header('Access-Control-Max-Age: 1800');
+            header('Access-Control-Allow-Methods: GET, POST, PATCH, PUT, DELETE');
+            exit;
+        } else {
+            header("Access-Control-Allow-Origin: *");
+            header("Access-Control-Allow-Headers: X-Token,Origin, X-Requested-With, Content-Type, Accept, Authorization");
+            header('Access-Control-Expose-Headers: *');
+            header('Access-Control-Max-Age: 1800');
+            header('Access-Control-Allow-Methods: GET, POST, PATCH, PUT, DELETE');
+        }
     }
 }
