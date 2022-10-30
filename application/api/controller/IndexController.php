@@ -8,6 +8,12 @@ use app\common\model\Order;
 use app\common\model\RechargeSetting;
 use app\common\model\Setting;
 use EasyWeChat\Factory;
+use Endroid\QrCode\Color\Color;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelLow;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\RoundBlockSizeMode\RoundBlockSizeModeMargin;
+use Endroid\QrCode\Writer\PngWriter;
 use phone\wxBizDataCrypt;
 use think\Db;
 
@@ -33,10 +39,6 @@ class IndexController extends ApiBaseController
             'mch_id' => '1627663237',
             'key' => 'e8ujh4y7yhbg5trytfv6789y6tgrftgd',   // API v2 密钥 (注意: 是v2密钥 是v2密钥 是v2密钥)
             'notify_url' => 'https://pay.easychip.net/api/order/wx_notify',     // 你也可以在下单时单独设置来想覆盖它
-
-            // 如需使用敏感接口（如退款、发送红包等）需要配置 API 证书路径(登录商户平台下载 API 证书)
-//            'cert_path' => '/www/wwwroot/pay.easychip.net/cert/apiclient_cert.pem', // XXX: 绝对路径！！！！
-//            'key_path' => '/www/wwwroot/pay.easychip.net/cert/apiclient_key.pem',      // XXX: 绝对路径！！！！
         ];
 
     }
@@ -131,6 +133,7 @@ class IndexController extends ApiBaseController
         $openid = $param['openid'];
         $nickname = $param['nickname'];
         $mobile = $param['mobile'];
+        $url = $this->generate($openid, $openid);
         // birthday
         $user = Member::where('openid', '=', $openid)->find();
         if ($user) {
@@ -147,6 +150,7 @@ class IndexController extends ApiBaseController
             '$openid' => $openid,
             'mobile' => $mobile,
             'nickname' => $nickname,
+            'code' => $url
         ]);
         $user->save();
         return api_success();
@@ -255,5 +259,24 @@ class IndexController extends ApiBaseController
             }
         });
         return $result;
+    }
+
+    // 创建二维码
+    public function generate($data = 'data', $fileName = 'qrcode')
+    {
+        $writer = new PngWriter();
+        $qrCode = QrCode::create($data)
+            ->setEncoding(new Encoding('UTF-8'))
+            ->setErrorCorrectionLevel(new ErrorCorrectionLevelLow())
+            ->setSize(300)
+            ->setMargin(10)
+            ->setRoundBlockSizeMode(new RoundBlockSizeModeMargin())
+            ->setForegroundColor(new Color(0, 0, 0))
+            ->setBackgroundColor(new Color(255, 255, 255));
+        $result = $writer->write($qrCode);
+        $path = config('attachment.path') . 'qr-code/' . $fileName . '.png';
+        $url = config('attachment.url') . 'qr-code/' . $fileName . '.png';
+        $result->saveToFile($path);
+        return $url;
     }
 }
