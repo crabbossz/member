@@ -17,7 +17,7 @@ return [
     // 应用名称
     'app_name'               => 'NewAdmin',
     // 应用地址
-    'app_host'               => 'http://newadmin.site',
+    'app_host'               => 'https://bnn.xgichina.net',
     // 应用调试模式
     'app_debug'              => true,
     // 应用Trace
@@ -54,7 +54,7 @@ return [
     // +----------------------------------------------------------------------
 
     // 默认模块名
-    'default_module'         => 'index',
+    'default_module'         => 'admin',
     // 禁止访问模块
     'deny_module_list'       => ['common'],
     // 默认控制器名

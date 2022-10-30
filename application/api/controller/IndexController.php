@@ -16,32 +16,52 @@ use Endroid\QrCode\RoundBlockSizeMode\RoundBlockSizeModeMargin;
 use Endroid\QrCode\Writer\PngWriter;
 use phone\wxBizDataCrypt;
 use think\Db;
+use think\Request;
 
-class IndexController extends ApiBaseController
+class IndexController
 {
+
+    /**
+     * @var Request
+     */
+    protected $request;
+
+
+    //当前请求的参数，get/post都在其中
+    protected $param;
+
     //公众号配置
     protected $config;
+
     //微信支付配置
     protected $payConfig;
 
-    public function __construct()
+
+    public function __construct(Request $request)
     {
         cors_html();
+
+        $this->request = $request;
+
+        // 初始化基本数据
+        $this->param = $request->param();
+
         $this->config = [
-            'app_id' => 'wx3cf0f39249eb0exx',
-            'secret' => 'f1c242f4f28f735d4687abb469072axx',
+            'app_id' => 'wx802e3ed9f3bbbcdc',
+            'secret' => '097a3d5e1c96e3c407d387acd51dc1c4',
         ];
 
         // 微信支付参数
         $this->payConfig = [
             // 必要配置
-            'app_id' => 'wx3cf0f39249eb0exx',
-            'mch_id' => '1627663237',
-            'key' => 'e8ujh4y7yhbg5trytfv6789y6tgrftgd',   // API v2 密钥 (注意: 是v2密钥 是v2密钥 是v2密钥)
-            'notify_url' => 'https://pay.easychip.net/api/order/wx_notify',     // 你也可以在下单时单独设置来想覆盖它
+            'app_id' => 'wx802e3ed9f3bbbcdc',
+            'mch_id' => '1633844167',
+            'key' => 'hu8y7yh3bfolu7ytgbedsdefcw3ed8ed',   // API v2 密钥 (注意: 是v2密钥 是v2密钥 是v2密钥)
+            'notify_url' => config('app.app_host') . '/api/index/wx_notify',     // 你也可以在下单时单独设置来想覆盖它
         ];
 
     }
+
 
     // index
     public function index()
@@ -55,7 +75,7 @@ class IndexController extends ApiBaseController
         $id = 2;
         $data = Setting::where('setting_group_id', $id)->select()->toArray()[0]["content"][0]["content"];
         $banner = [
-            "banner" => $data
+            "banner" => config('app.app_host') . $data
         ];
         return api_success($banner);
     }
@@ -63,54 +83,26 @@ class IndexController extends ApiBaseController
     // 获取openid
     public function getOpenId()
     {
-        $code = $this->param['code'] ?? "";
+
+        $code = $this->param["code"];
         $app = Factory::miniProgram($this->config);
         //获取userid
         $data = $app->auth->session($code);
         return api_success($data);
     }
 
-    // 获取openid
-    public function getOpenId2()
-    {
-        $param = $this->request->param(false);
-        $code = $param['code'];
-        $app_id = 'wx3cf0f39249eb0exx';
-        $app_secret = 'f1c242f4f28f735d4687abb469072axx';
-        $url = "https://api.weixin.qq.com/sns/jscode2session?appid=" . $app_id . "&secret=" . $app_secret . "&js_code=" . $code . "&grant_type=authorization_code";
-
-        function httpRequest($url, $data = null)
-        {
-            $curl = curl_init();
-            curl_setopt($curl, CURLOPT_URL, $url);
-            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-            if (!empty($data)) {
-                curl_setopt($curl, CURLOPT_POST, 1);
-                curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-            }
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-            $output = curl_exec($curl);
-            curl_close($curl);
-            return $output;
-        }
-
-        $result = httpRequest($url);
-        return api_success(json_decode($result));
-    }
-
     // 获取用户手机号
     public function getUserPhone()
     {
         $param = $this->request->param(false);
-        $appid = 'wx3cf0f39249eb0exx';
+        $appid = $this->config['app_id'];
         $sessionKey = $param['session_key'];
         $encryptedData = $param['encryptedData'];
         $iv = $param['iv'];
         $pc = new wxBizDataCrypt($appid, $sessionKey);
         $errCode = $pc->decryptData($encryptedData, $iv, $data);
         if ($errCode != 0) {
-            return error();
+            return api_error();
         }
         $data = json_decode($data);
         return api_success($data);
