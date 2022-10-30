@@ -23,7 +23,9 @@
         "lcobucci/jwt": "=3.3.2",
         "phpoffice/phpspreadsheet": "^1.8",
         "ext-curl": "*",
-        "ext-json": "*"
+        "ext-json": "*",
+        "naixiaoxin/think-wechat": "^1.6",
+        "endroid/qr-code": "^4.3"
     },
     "autoload": {
         "psr-4": {
@@ -36,7 +38,8 @@
     "config": {
         "preferred-install": "dist",
         "allow-plugins": {
-            "topthink/think-installer": true
+            "topthink/think-installer": true,
+            "easywechat-composer/easywechat-composer": true
         }
     }
 }
