@@ -4,9 +4,11 @@ namespace app\api\controller;
 
 use app\common\model\FundsChange;
 use app\common\model\Member;
+use app\common\model\MemberLevel;
 use app\common\model\Order;
 use app\common\model\RechargeSetting;
 use app\common\model\Setting;
+use app\common\model\UserLevel;
 use EasyWeChat\Factory;
 use Endroid\QrCode\Color\Color;
 use Endroid\QrCode\Encoding\Encoding;
@@ -90,6 +92,20 @@ class IndexController
         return api_success($banner);
     }
 
+    // 会员说明
+    public function description()
+    {
+        $id = 2;
+        $data = Setting::where('setting_group_id', $id)->select()->toArray()[0]["content"][1]["content"];
+        $replace = config('app.app_host') . '/uploads/ueditor';
+        $search = '/uploads/ueditor';
+        $data =  str_ireplace($search, $replace, $data);
+        $banner = [
+            "description" => $data
+        ];
+        return api_success($banner);
+    }
+
     // 获取openid
     public function getOpenId()
     {
@@ -128,6 +144,9 @@ class IndexController
         $user["integral"] = $user["integral"] / 100;
         $user["balance"] = $user["balance"] / 100;
         $user["code"] = config('app.app_host') . $user["code"];
+        $userLevel = MemberLevel::where('id', $user['member_level_id'])->find();
+        $user["level"] = $userLevel['name'];
+        $user["level_image"] = config('app.app_host') . $userLevel['img'];
         return api_success($user);
     }
 
