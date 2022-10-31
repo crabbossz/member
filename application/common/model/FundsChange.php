@@ -17,7 +17,7 @@ class FundsChange extends Model
     protected $autoWriteTimestamp = true;
 
     //可搜索字段
-    protected $searchField = [];
+    protected $searchField = ["nickname", "mobile"];
 
     //可作为条件的字段
     protected $whereField = [];

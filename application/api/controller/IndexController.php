@@ -112,8 +112,12 @@ class IndexController
     public function getUserInfo()
     {
         $user = Member::where('openid', '=', $this->param['openid'])->find();
+        if (!$user) {
+            return api_error();
+        }
         $user["integral"] = $user["integral"] / 100;
         $user["balance"] = $user["balance"] / 100;
+        $user["code"] = config('app.app_host') . $user["code"];
         return api_success($user);
     }
 
@@ -139,7 +143,7 @@ class IndexController
         // 判断
         $user = new Member([
             'avatar' => $avatar,
-            '$openid' => $openid,
+            'openid' => $openid,
             'mobile' => $mobile,
             'nickname' => $nickname,
             'code' => $url
@@ -163,16 +167,18 @@ class IndexController
     public function recharge()
     {
         $rechargeSetting = RechargeSetting::where("id", $this->param['rechargeSettingId'])->find();
-//        $member = Member::where("id", $this->param['memberId'])->find();
+        $member = Member::where("openid", $this->param['openid'])->find();
         Db::startTrans();
         try {
             // 创建订单
             $out_trade_no = date('Ymd') . str_pad(mt_rand(1, 99999), 5, '0', STR_PAD_LEFT) . rand(1000, 9999);
             $data = [
                 "order_no" => $out_trade_no,
-                "member_id" => $this->param['memberId'],
+                "member_id" => $member['id'],
                 "recharge" => $rechargeSetting["recharge"],
                 "giving" => $rechargeSetting["giving"],
+                "mobile" => $member['mobile'],
+                "nickname" => $member['nickname'],
             ];
             Order::create($data);
             Db::commit();
@@ -237,6 +243,8 @@ class IndexController
                         $fundsChangeData = [
                             "member_id" => $member["id"],
                             "amount" => $order["recharge"] + $order["giving"],
+                            "mobile" => $member['mobile'],
+                            "nickname" => $member['nickname'],
                             "description" => "充值" . $recharge . "元,赠送" . $giving . "元"
                         ];
                         FundsChange::create($fundsChangeData);
