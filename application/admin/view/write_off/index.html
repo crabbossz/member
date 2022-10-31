@@ -13,7 +13,7 @@
 
                         <div class="form-group">
                             <input value="{$_keywords ? $_keywords : '' ;}"
-                                   name="_keywords" id="_keywords" class="form-control input-sm" placeholder="">
+                                   name="_keywords" id="_keywords" class="form-control input-sm" placeholder="会员昵称/手机号">
                         </div>
 
 
@@ -82,16 +82,11 @@
                             </td>
                             <td>{$item.id}</td>
                             <td>{$item.member.nickname|default=''}</td>
-                            <td>{$item.change}</td>
-                            <td>{$item.admin_user_id}</td>
+                            <td>¥<?php echo htmlentities(sprintf("%1\$.2f", $item['change'] /100)); ?></td>
+                            <td>{$item.admin.username}</td>
                             <td>{$item.create_time}</td>
 
                             <td class="td-do">
-                                <a href="{:url('edit',['id'=>$item.id])}"
-                                   class="btn btn-primary btn-xs" title="修改" data-toggle="tooltip">
-                                    <i class="fa fa-pencil"></i>
-
-                                </a>
                                 <a class="btn btn-danger btn-xs AjaxButton" data-toggle="tooltip" title="删除"
                                    data-id="{$item.id}" data-confirm-title="删除确认"
                                    data-confirm-content='您确定要删除ID为 <span class="text-red">{$item.id}</span> 的数据吗'

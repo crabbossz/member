@@ -5,6 +5,7 @@
 
 namespace app\common\model;
 
+use app\admin\model\AdminUser;
 use think\model\concern\SoftDelete;
 
 class WriteOff extends Model
@@ -32,5 +33,8 @@ class WriteOff extends Model
         return $this->belongsTo(Member::class);
     }
 
-
+    public function admin()
+    {
+        return $this->belongsTo(AdminUser::class);
+    }
 }
