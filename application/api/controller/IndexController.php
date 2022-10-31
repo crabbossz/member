@@ -16,6 +16,7 @@ use Endroid\QrCode\RoundBlockSizeMode\RoundBlockSizeModeMargin;
 use Endroid\QrCode\Writer\PngWriter;
 use phone\wxBizDataCrypt;
 use think\Db;
+use think\Model;
 use think\Request;
 
 class IndexController
@@ -225,10 +226,10 @@ class IndexController
                     $order = new Order();
                     $order = $order->where('order_no', $message['out_trade_no'])
                         ->find();
-                    if ($order["payment_status"] == 0) {
+                    if ($order["order_status"] == 0) {
                         // 更改订单状态
                         Order::where('order_no', $message['out_trade_no'])
-                            ->update(['payment_status' => 1]);
+                            ->update(['order_status' => 1]);
                         // 更改用户信息
                         $member = Member::where("id", $order["member_id"])->find();
                         $memberUpdate = [
@@ -249,6 +250,7 @@ class IndexController
                         ];
                         FundsChange::create($fundsChangeData);
                     }
+                    Db::commit();
                 } catch (\Exception $e) {
                     // 回滚事务
                     Db::rollback();
