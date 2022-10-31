@@ -5,6 +5,8 @@
 
 namespace app\admin\controller;
 
+use app\common\model\MemberLevel;
+use app\common\model\UserLevel;
 use think\Request;
 use app\common\model\Member;
 
@@ -81,36 +83,22 @@ class MemberController extends Controller
         $data = $model::get($id);
         if ($request->isPost()) {
             $param = $request->param();
-            $validate_result = $validate->scene('edit')->check($param);
-            if (!$validate_result) {
-                return admin_error($validate->getError());
-            }
-            //处理头像上传
-            if (!empty($_FILES['avatar']['name'])) {
-                $attachment_avatar = new \app\common\model\Attachment;
-                $file_avatar = $attachment_avatar->upload('avatar');
-                if ($file_avatar) {
-                    $param['avatar'] = $file_avatar->url;
-                }
-            }
-
-            //处理会员码上传
-            if (!empty($_FILES['code']['name'])) {
-                $attachment_code = new \app\common\model\Attachment;
-                $file_code = $attachment_code->upload('code');
-                if ($file_code) {
-                    $param['code'] = $file_code->url;
-                }
-            }
-
-
-            $result = $data->save($param);
+            $update = [
+                "birthday" => $param['birthday'],
+                'business' => $param['business'],
+                'member_level_id' => $param['member_level_id'],
+                'mobile' => $param['mobile'],
+            ];
+            $result = $data->save($update);
             return $result ? admin_success() : admin_error();
         }
 
+
+        $data['integral'] = $data['integral'] / 100;
+        $data['balance'] = $data['balance'] / 100;
         $this->assign([
             'data' => $data,
-
+            'member_level_list' => MemberLevel::all(),
         ]);
         return $this->fetch('add');
 

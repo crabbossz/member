@@ -1,23 +1,25 @@
 <?php
 /**
- * 会员模型
+ * 会员等级模型
  */
 
 namespace app\common\model;
 
 use think\model\concern\SoftDelete;
 
-class Member extends Model
+class MemberLevel extends Model
 {
     // 自定义选择数据
+
+
     use SoftDelete;
 
     public $softDelete = true;
-    protected $name = 'member';
+    protected $name = 'member_level';
     protected $autoWriteTimestamp = true;
 
     //可搜索字段
-    protected $searchField = ["nickname", "mobile"];
+    protected $searchField = ['name'];
 
     //可作为条件的字段
     protected $whereField = [];
@@ -25,9 +27,11 @@ class Member extends Model
     //可做为时间
     protected $timeField = [];
 
-    //关联用户等级
-    public function memberLevel()
+    //是否启用获取器
+    public function getStatusTextAttr($value, $data)
     {
-        return $this->belongsTo(MemberLevel::class);
+        return self::BOOLEAN_TEXT[$data['status']];
     }
+
+
 }

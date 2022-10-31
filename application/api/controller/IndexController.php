@@ -27,6 +27,11 @@ class IndexController
      */
     protected $request;
 
+    //当前页码
+    protected $page;
+
+    //每页数据量
+    protected $limit;
 
     //当前请求的参数，get/post都在其中
     protected $param;
@@ -46,6 +51,10 @@ class IndexController
 
         // 初始化基本数据
         $this->param = $request->param();
+
+        $this->page = $this->param['page'] ?? 1;
+        $this->limit = $this->param['limit'] ?? 10;
+        $this->limit = $this->limit <= 100 ? $this->limit : 100;
 
         $this->config = [
             'app_id' => 'wx802e3ed9f3bbbcdc',
@@ -212,6 +221,21 @@ class IndexController
         }
 
         return api_success($config);
+    }
+
+    // 资金变动记录
+    public function changeRecord()
+    {
+        $member_id = Member::where("openid", $this->param['openid'])->value('id');
+        $data = FundsChange::where("member_id", $member_id)
+            ->order("id desc")
+            ->page($this->page, $this->limit)
+            ->select()
+            ->toArray();
+        foreach ($data as $k => $v) {
+            $data[$k]['amount'] = $v['amount'] / 100;
+        }
+        return api_success($data);
     }
 
     // 充值回调
