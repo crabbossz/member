@@ -28,7 +28,7 @@
                                     {foreach name='member_list' id='item'}
                                     <option value="{$item.id}" {if isset($data) &&
                                             $data.member_id==$item.id}selected{/if}>
-                                        {$item.nickname}
+                                        {$item.nickname}({$item.mobile})-¥<?php echo htmlentities(sprintf("%1\$.2f", $item['balance'] /100)); ?>
                                     </option>
                                     {/foreach}
                                 </select>
@@ -42,6 +42,13 @@
                             <div class="col-sm-10 col-md-4">
                                 <input id="change" name="change" value="{$data.change|default='0'}"
                                        placeholder="请输入核销金额" type="text" class="form-control field-text">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="reason" class="col-sm-2 control-label">核销理由</label>
+                            <div class="col-sm-10 col-md-4">
+                                <input id="reason" name="reason" value="{$data.reason|default=''}"
+                                       placeholder="请输入核销理由" type="text" class="form-control field-text">
                             </div>
                         </div>
 

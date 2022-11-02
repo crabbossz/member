@@ -5,6 +5,7 @@
 
 namespace app\admin\controller;
 
+use EasyWeChat\Factory;
 use think\Request;
 use app\common\model\Order;
 
@@ -17,17 +18,17 @@ class OrderController extends Controller
     public function index(Request $request, Order $model)
     {
         $param = $request->param();
-        $model  = $model->scope('where', $param);
-        
-        $data = $model->paginate($this->admin['per_page'], false, ['query'=>$request->get()]);
+        $model = $model->scope('where', $param);
+
+        $data = $model->paginate($this->admin['per_page'], false, ['query' => $request->get()]);
         //关键词，排序等赋值
         $this->assign($request->get());
 
         $this->assign([
-            'data'  => $data,
-            'page'  => $data->render(),
+            'data' => $data,
+            'page' => $data->render(),
             'total' => $data->total(),
-            
+
         ]);
         return $this->fetch();
     }
@@ -36,26 +37,25 @@ class OrderController extends Controller
     public function add(Request $request, Order $model, OrderValidate $validate)
     {
         if ($request->isPost()) {
-            $param           = $request->param();
+            $param = $request->param();
             $validate_result = $validate->scene('add')->check($param);
             if (!$validate_result) {
                 return admin_error($validate->getError());
             }
-            
+
             $result = $model::create($param);
 
             $url = URL_BACK;
-            if(isset($param['_create']) && $param['_create']==1){
-               $url = URL_RELOAD;
+            if (isset($param['_create']) && $param['_create'] == 1) {
+                $url = URL_RELOAD;
             }
 
-            return $result ? admin_success('添加成功',$url) : admin_error();
+            return $result ? admin_success('添加成功', $url) : admin_error();
         }
 
         $this->assign([
-    'order_status_list'=>order::ORDER_STATUS_LIST,
-]);
-
+            'order_status_list' => order::ORDER_STATUS_LIST,
+        ]);
 
 
         return $this->fetch();
@@ -67,19 +67,19 @@ class OrderController extends Controller
 
         $data = $model::get($id);
         if ($request->isPost()) {
-            $param           = $request->param();
+            $param = $request->param();
             $validate_result = $validate->scene('edit')->check($param);
             if (!$validate_result) {
                 return admin_error($validate->getError());
             }
-            
+
             $result = $data->save($param);
             return $result ? admin_success() : admin_error();
         }
 
         $this->assign([
             'data' => $data,
-            'order_status_list'=>order::ORDER_STATUS_LIST,
+            'order_status_list' => order::ORDER_STATUS_LIST,
         ]);
         return $this->fetch('add');
 
@@ -107,5 +107,25 @@ class OrderController extends Controller
         return $result ? admin_success('操作成功', URL_RELOAD) : admin_error();
     }
 
-    
+    // 查询订单
+    public function check($id, Order $model, Request $request)
+    {
+        $order = $model->where('id', '=', $id)
+            ->find();
+        $out_trade_no = $order['order_no'];
+        $config = [
+            // 必要配置
+            'app_id' => 'wx802e3ed9f3bbbcdc',
+            'mch_id' => '1633844167',
+            'key' => 'hu8y7yh3bfolu7ytgbedsdefcw3ed8ed',   // API v2 密钥 (注意: 是v2密钥 是v2密钥 是v2密钥)
+            'notify_url' => config('app.app_host') . '/api/index/wx_notify',     // 你也可以在下单时单独设置来想覆盖它
+        ];
+        $app = Factory::payment($config);
+        $result = $app->order->queryByOutTradeNumber($out_trade_no);
+        if ($result['trade_state'] == "SUCCESS") {
+            Order::where('id', '=', $id)
+                ->update(['order_status' => 1,]);
+        }
+        return admin_success();
+    }
 }

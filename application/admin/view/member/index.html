@@ -55,9 +55,9 @@
                             <th>头像</th>
                             <th>昵称</th>
                             <th>会员等级</th>
+                            <th>会员码内容</th>
                             <th>会员码</th>
                             <th>手机号</th>
-                            <th>生日</th>
                             <th>积分</th>
                             <th>余额</th>
                             <th>业务员</th>
@@ -73,9 +73,9 @@
                             <td><img class="dataListImg" src="{$item.avatar}"></td>
                             <td>{$item.nickname}</td>
                             <td>{$item.member_level.name}</td>
+                            <td>{$item.code_value}</td>
                             <td><img class="dataListImg" src="{$item.code}"></td>
                             <td>{$item.mobile}</td>
-                            <td>{$item.birthday}</td>
                             <td><?php echo htmlentities(sprintf("%1\$.2f", $item['integral'] /100)); ?></td>
                             <td>¥<?php echo htmlentities(sprintf("%1\$.2f", $item['balance'] /100)); ?></td>
                             <td>{$item.business}</td>
@@ -85,6 +85,11 @@
                                 <a href="{:url('edit',['id'=>$item.id])}"
                                    class="btn btn-primary btn-xs" title="修改" data-toggle="tooltip">
                                     <i class="fa fa-pencil"></i>
+
+                                </a>
+                                <a href="{:url('admin/write_off/add',['member_id'=>$item.id])}"
+                                   class="btn btn-success btn-xs" title="核销" data-toggle="tooltip">
+                                    <i class="fa fa-rmb"></i>
 
                                 </a>
 

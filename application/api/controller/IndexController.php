@@ -8,7 +8,6 @@ use app\common\model\MemberLevel;
 use app\common\model\Order;
 use app\common\model\RechargeSetting;
 use app\common\model\Setting;
-use app\common\model\UserLevel;
 use EasyWeChat\Factory;
 use Endroid\QrCode\Color\Color;
 use Endroid\QrCode\Encoding\Encoding;
@@ -99,9 +98,23 @@ class IndexController
         $data = Setting::where('setting_group_id', $id)->select()->toArray()[0]["content"][1]["content"];
         $replace = config('app.app_host') . '/uploads/ueditor';
         $search = '/uploads/ueditor';
-        $data =  str_ireplace($search, $replace, $data);
+        $data = str_ireplace($search, $replace, $data);
         $banner = [
             "description" => $data
+        ];
+        return api_success($banner);
+    }
+
+    // 充值协议
+    public function agreement()
+    {
+        $id = 2;
+        $data = Setting::where('setting_group_id', $id)->select()->toArray()[0]["content"][2]["content"];
+        $replace = config('app.app_host') . '/uploads/ueditor';
+        $search = '/uploads/ueditor';
+        $data = str_ireplace($search, $replace, $data);
+        $banner = [
+            "agreement" => $data
         ];
         return api_success($banner);
     }
@@ -158,7 +171,10 @@ class IndexController
         $openid = $param['openid'];
         $nickname = $param['nickname'];
         $mobile = $param['mobile'];
-        $url = $this->generate($openid, $openid);
+        $permitted_chars = '0123456789abcdefghjkmnpqrstuvwxy';
+        $codeValue = substr(str_shuffle($permitted_chars), 0, 8);
+
+        $url = $this->generate($codeValue, $codeValue);
         // birthday
         $user = Member::where('openid', '=', $openid)->find();
         if ($user) {
@@ -175,6 +191,7 @@ class IndexController
             'openid' => $openid,
             'mobile' => $mobile,
             'nickname' => $nickname,
+            'code_value' => $codeValue,
             'code' => $url
         ]);
         $user->save();
@@ -252,7 +269,13 @@ class IndexController
             ->select()
             ->toArray();
         foreach ($data as $k => $v) {
-            $data[$k]['amount'] = $v['amount'] / 100;
+            $data[$k]['type'] = false;
+            if ($v['amount'] > 0) {
+                $data[$k]['type'] = true;
+            }
+            $amount = $v['amount'] / 100;
+            $data[$k]['amount'] = $amount > 0 ? "+" . $amount : $amount . "";
+            $data[$k]['current'] = $v['current'] / 100;
         }
         return api_success($data);
     }
@@ -289,6 +312,7 @@ class IndexController
                             "amount" => $order["recharge"] + $order["giving"],
                             "mobile" => $member['mobile'],
                             "nickname" => $member['nickname'],
+                            "current" => $member["balance"] + $order["recharge"] + $order["giving"],
                             "description" => "充值" . $recharge . "元,赠送" . $giving . "元"
                         ];
                         FundsChange::create($fundsChangeData);
@@ -323,5 +347,20 @@ class IndexController
         $url = config('attachment.url') . 'qr-code/' . $fileName . '.png';
         $result->saveToFile($path);
         return $url;
+    }
+
+    public function update()
+    {
+        $member = Member::all();
+        foreach ($member as $k => $v) {
+            $permitted_chars = '0123456789';
+            $codeValue = substr(str_shuffle($permitted_chars), 0, 10);
+            $url = $this->generate($codeValue, $codeValue);
+            Member::where('id', '=', $v['id'])
+                ->update([
+                    'code' => $url,
+                    'code_value' => $codeValue,
+                ]);
+        }
     }
 }

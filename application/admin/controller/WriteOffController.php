@@ -38,15 +38,23 @@ class WriteOffController extends Controller
     //添加
     public function add(Request $request, WriteOff $model, WriteOffValidate $validate)
     {
+        $param = $request->param();
+        $member_id = $param['member_id'] ?? 0;
+
         if ($request->isPost()) {
-            $param = $request->param();
             $validate_result = $validate->scene('add')->check($param);
             if (!$validate_result) {
                 return admin_error($validate->getError());
             }
+            $member = Member::where("id", $param['member_id'])->find();
+            // 更改用户金额
+            if (($member['balance'] - $param['change']) < 0) {
+                return admin_error("用户余额不足");
+            }
+
             Db::startTrans();
             try {
-                $member = Member::where("id", $param['member_id'])->find();
+
                 // 创建核销
                 $param['admin_user_id'] = $this->user['id'];
                 $change = $param['change'];
@@ -54,10 +62,6 @@ class WriteOffController extends Controller
                 $param['nickname'] = $member['nickname'];
                 $param['mobile'] = $member['mobile'];
                 $result = $model::create($param);
-                // 更改用户金额
-                if (($member['balance'] - $param['change']) < 0) {
-                    return admin_error("用户余额不足");
-                }
                 $memberUpdate = [
                     "balance" => $member["balance"] - $param['change']
                 ];
@@ -69,7 +73,8 @@ class WriteOffController extends Controller
                     "amount" => -$param['change'],
                     "mobile" => $member['mobile'],
                     "nickname" => $member['nickname'],
-                    "description" => "消费" . $change . "元"
+                    "current" => $member["balance"] - $param['change'],
+                    "description" => $param['reason'] == "" ? "消费" . $change . "元" : $param['reason'] . $change . "元"
                 ];
                 FundsChange::create($fundsChangeData);
                 Db::commit();
@@ -89,7 +94,7 @@ class WriteOffController extends Controller
 
         $this->assign([
             'member_list' => Member::all(),
-
+            'data' => ['member_id' => $member_id],
         ]);
 
 
