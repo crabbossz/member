@@ -56,6 +56,7 @@
                         <tr>
                             <th>ID</th>
                             <th>会员</th>
+                            <th>手机号</th>
                             <th>核销金额</th>
                             <th>核销理由</th>
                             <th>管理员</th>
@@ -68,6 +69,7 @@
                         <tr>
                             <td>{$item.id}</td>
                             <td>{$item.member.nickname|default=''}</td>
+                            <td>{$item.mobile|default=''}</td>
                             <td>¥<?php echo htmlentities(sprintf("%1\$.2f", $item['change'] /100)); ?></td>
                             <td>{$item.reason|default=''}</td>
                             <td>{$item.admin.username}</td>

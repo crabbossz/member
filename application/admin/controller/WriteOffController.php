@@ -52,9 +52,8 @@ class WriteOffController extends Controller
                 return admin_error("用户余额不足");
             }
 
-            Db::startTrans();
             try {
-
+                Db::startTrans();
                 // 创建核销
                 $param['admin_user_id'] = $this->user['id'];
                 $change = $param['change'];
