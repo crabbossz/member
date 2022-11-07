@@ -293,14 +293,28 @@ class IndexController
                     $order = $order->where('order_no', $message['out_trade_no'])
                         ->find();
                     if ($order["order_status"] == 0) {
+                        $member = Member::where("id", $order["member_id"])->find();
+                        $all_recharge = $member['integral'] + $order["recharge"];
+                        $level = 1;
+                        if ($all_recharge > 1500 * 100) {
+                            $level = 2;
+                        } elseif ($all_recharge > 3000 * 100) {
+                            $level = 3;
+                        } elseif ($all_recharge > 6000 * 100) {
+                            $level = 4;
+                        } elseif ($all_recharge > 10000 * 100) {
+                            $level = 5;
+                        } elseif ($all_recharge > 20000 * 100) {
+                            $level = 6;
+                        }
                         // 更改订单状态
                         Order::where('order_no', $message['out_trade_no'])
                             ->update(['order_status' => 1]);
                         // 更改用户信息
-                        $member = Member::where("id", $order["member_id"])->find();
                         $memberUpdate = [
                             "integral" => $member["integral"] + $order["recharge"],
-                            "balance" => $member["balance"] + $order["recharge"] + $order["giving"]
+                            "balance" => $member["balance"] + $order["recharge"] + $order["giving"],
+                            "member_level_id" => $level
                         ];
                         Member::where('id', $member['id'])
                             ->update($memberUpdate);
