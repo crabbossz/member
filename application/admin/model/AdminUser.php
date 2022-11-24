@@ -35,7 +35,7 @@ class AdminUser extends Model
     {
         //添加自动加密密码
         self::event('before_insert', static function ($data) {
-            $data->password = base64_encode(password_hash($data->password, 1));
+                $data->password = base64_encode(password_hash($data->password, 1));
         });
 
         //修改密码自动加密
